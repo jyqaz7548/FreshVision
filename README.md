@@ -26,6 +26,20 @@
 ```bash
 git clone <레포 주소>
 cd freshvision
+```
+
+### 1. 시스템 패키지 (apt) - numpy, opencv, picamera2, Pillow ImageTk
+
+```bash
+sudo apt update
+sudo apt install python3-numpy python3-opencv python3-picamera2 python3-pil.imagetk -y
+```
+
+> ⚠️ numpy/opencv/picamera2를 pip로 설치하면 ABI 충돌(`numpy.dtype size changed`, `multiarray failed to import`)이 발생합니다. 반드시 apt로 설치하세요.
+
+### 2. 나머지 라이브러리 (pip)
+
+```bash
 pip install -r requirements.txt --break-system-packages
 ```
 
@@ -33,9 +47,6 @@ pip install -r requirements.txt --break-system-packages
 > ```bash
 > pip install tflite-runtime --break-system-packages --extra-index-url https://google-coral.github.io/py-repo/
 > ```
-
-> `picamera2`는 Raspberry Pi OS(Bullseye 이상)에 기본 포함되어 있습니다.
-> 안 잡히면: `sudo apt install -y python3-picamera2`
 
 > raspi-config 또는 설정 앱에서 카메라 인터페이스가 활성화되어 있는지 확인하세요.
 

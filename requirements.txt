@@ -1,6 +1,8 @@
 RPi.GPIO
-opencv-python
 Pillow
-numpy
 tflite-runtime
-picamera2
+
+# numpy, opencv-python, picamera2는 pip로 설치하지 마세요!
+# picamera2와 ABI 충돌(numpy.dtype size changed 에러)이 발생합니다.
+# 아래 명령으로 시스템 패키지(apt)로 설치하세요:
+#   sudo apt install python3-numpy python3-opencv python3-picamera2 python3-pil.imagetk -y
