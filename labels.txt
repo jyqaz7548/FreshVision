@@ -1,0 +1,3 @@
+0 normal apple
+1 rotten apple
+2 not detected
