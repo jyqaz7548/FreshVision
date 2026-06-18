@@ -40,7 +40,7 @@ class FreshVisionApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Fresh Vision - 과일 신선도 판별기")
-        self.root.geometry("800x650")
+        self.root.geometry("1100x650")
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # ===== GPIO 초기화 =====
