@@ -7,7 +7,7 @@ get_frame()이 BGR(OpenCV 형식) numpy 배열을 반환하도록 맞춰서
 classifier.py, main.py의 나머지 로직은 그대로 사용 가능.
 """
 
-import cv2
+import time
 from picamera2 import Picamera2
 from config import CAMERA_WIDTH, CAMERA_HEIGHT
 
@@ -15,21 +15,22 @@ from config import CAMERA_WIDTH, CAMERA_HEIGHT
 class RPiCamera:
     def __init__(self):
         self.picam2 = Picamera2()
-        config = self.picam2.create_preview_configuration(
+
+        camera_config = self.picam2.create_video_configuration(
             main={"size": (CAMERA_WIDTH, CAMERA_HEIGHT), "format": "RGB888"}
         )
-        self.picam2.configure(config)
+        self.picam2.configure(camera_config)
         self.picam2.start()
+        time.sleep(1)  # 카메라 워밍업 대기
 
     def get_frame(self):
         """
-        BGR(OpenCV 형식) numpy 배열 반환.
+        RGB numpy 배열 반환.
         실패 시 None.
         """
         try:
             frame = self.picam2.capture_array()  # RGB888
-            frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            return frame_bgr
+            return frame  # RGB 그대로 반환
         except Exception:
             return None
 

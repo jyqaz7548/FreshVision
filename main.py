@@ -146,13 +146,12 @@ class FreshVisionApp:
         if frame is not None:
             self.current_frame = frame.copy()
 
-            # Tkinter에 표시할 이미지로 변환
-            display_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            display_frame = cv2.resize(display_frame, (CAMERA_WIDTH, CAMERA_HEIGHT))
+            # Tkinter에 표시 (이미 RGB이므로 변환 불필요)
+            display_frame = cv2.resize(frame, (CAMERA_WIDTH, CAMERA_HEIGHT))
             img = Image.fromarray(display_frame)
             imgtk = ImageTk.PhotoImage(image=img)
 
-            self.camera_label.imgtk = imgtk  # 참조 유지 (GC 방지)
+            self.camera_label.imgtk = imgtk
             self.camera_label.configure(image=imgtk)
 
         # 약 30fps로 갱신

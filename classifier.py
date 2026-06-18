@@ -60,9 +60,8 @@ class FruitClassifier:
                 "bad_prob": float (0~1)
             }
         """
-        # 전처리: 리사이즈, BGR -> RGB, 정규화
+        # 전처리: 리사이즈, 정규화 (이미 RGB이므로 색상 변환 불필요)
         img = cv2.resize(frame, MODEL_INPUT_SIZE)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         input_dtype = self.input_details[0]["dtype"]
 
