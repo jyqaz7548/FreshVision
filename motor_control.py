@@ -23,6 +23,7 @@ class DCMotor:
         GPIO.setup(ENA_PIN, GPIO.OUT)
 
         self.pwm = GPIO.PWM(ENA_PIN, 1000)  # 1kHz PWM
+        self.pwm.start(0)
         self.is_running = False
 
         # 정지 상태로 초기화
@@ -30,28 +31,22 @@ class DCMotor:
         GPIO.output(IN2_PIN, GPIO.LOW)
 
     def stop(self):
-        """모터 정지"""
+        """모터 정지 (테스트 코드와 동일 방식)"""
         self.pwm.ChangeDutyCycle(0)
         GPIO.output(IN1_PIN, GPIO.LOW)
         GPIO.output(IN2_PIN, GPIO.LOW)
-        self.pwm.stop()
         self.is_running = False
 
     def forward(self, speed=MOTOR_SPEED):
         """컨베이어벨트를 정방향으로 구동"""
-        if not self.is_running:
-            self.pwm.start(0)
         GPIO.output(IN1_PIN, GPIO.HIGH)
         GPIO.output(IN2_PIN, GPIO.LOW)
         self.pwm.ChangeDutyCycle(speed)
         self.is_running = True
 
     def cleanup(self):
-        if self.is_running:
-            self.stop()
-        else:
-            GPIO.output(IN1_PIN, GPIO.LOW)
-            GPIO.output(IN2_PIN, GPIO.LOW)
+        self.stop()
+        self.pwm.stop()
 
 
 class ServoMotor:
