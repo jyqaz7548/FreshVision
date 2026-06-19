@@ -232,11 +232,15 @@ class FreshVisionApp:
             self.state = STATE_WAITING
             return
 
+        # 정지 상태에서 카메라가 안정된 프레임을 잡도록 잠깐 대기
+        time.sleep(0.5)
+
         result = self.classifier.predict(self.current_frame)
 
         if not result["is_fruit_detected"]:
-            # 과일이 인식되지 않음 -> 판별 없이 대기 상태로 복귀, 모터 재구동
+            # 과일이 인식되지 않음 -> 잠시 대기 후 대기 상태로 복귀
             self.root.after(0, self._show_not_detected)
+            time.sleep(1.0)  # 같은 위치에서 즉시 재판별 방지
             self.state = STATE_WAITING
             self.dc_motor.forward()
             return
@@ -252,6 +256,9 @@ class FreshVisionApp:
 
         # 결과 표시 유지 시간 설정
         self.result_display_until = time.time() + LED_DISPLAY_TIME
+
+        # 판별 결과를 사람이 확인할 수 있도록 정지 상태 유지
+        time.sleep(LED_DISPLAY_TIME)
 
         # 분류 이동 단계로 전환
         self.sort_result = result
