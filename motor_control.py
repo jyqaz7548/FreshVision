@@ -22,31 +22,43 @@ class DCMotor:
         GPIO.setup(IN2_PIN, GPIO.OUT)
         GPIO.setup(ENA_PIN, GPIO.OUT)
 
-        self.pwm = GPIO.PWM(ENA_PIN, 1000)  # 1kHz PWM
-        self.pwm.start(0)
+        self.pwm = None
         self.is_running = False
 
         # 정지 상태로 초기화
+        GPIO.output(ENA_PIN, GPIO.LOW)
         GPIO.output(IN1_PIN, GPIO.LOW)
         GPIO.output(IN2_PIN, GPIO.LOW)
 
     def stop(self):
-        """모터 정지 (브레이크 모드: IN1=IN2=HIGH로 모터를 꽉 잡아 미세 움직임 방지)"""
-        GPIO.output(IN1_PIN, GPIO.HIGH)
-        GPIO.output(IN2_PIN, GPIO.HIGH)
-        self.pwm.ChangeDutyCycle(0)
+        """모터 정지 (ENA를 완전히 차단하여 미세 움직임 방지)"""
+        if self.pwm is not None:
+            self.pwm.ChangeDutyCycle(0)
+            self.pwm.stop()                # PWM 신호 완전 정지
+            self.pwm = None
+        GPIO.output(ENA_PIN, GPIO.LOW)     # ENA 핀을 직접 LOW로 (완전 차단)
+        GPIO.output(IN1_PIN, GPIO.LOW)
+        GPIO.output(IN2_PIN, GPIO.LOW)
         self.is_running = False
 
     def forward(self, speed=MOTOR_SPEED):
         """컨베이어벨트를 정방향으로 구동"""
+        if not self.is_running:
+            # 정지 상태였으면 ENA PWM을 다시 시작
+            GPIO.setup(ENA_PIN, GPIO.OUT)
+            self.pwm = GPIO.PWM(ENA_PIN, 1000)
+            self.pwm.start(0)
         GPIO.output(IN1_PIN, GPIO.HIGH)
         GPIO.output(IN2_PIN, GPIO.LOW)
         self.pwm.ChangeDutyCycle(speed)
         self.is_running = True
 
     def cleanup(self):
-        self.stop()
-        self.pwm.stop()
+        if self.is_running:
+            self.stop()
+        GPIO.output(ENA_PIN, GPIO.LOW)
+        GPIO.output(IN1_PIN, GPIO.LOW)
+        GPIO.output(IN2_PIN, GPIO.LOW)
 
 
 class ServoMotor:
