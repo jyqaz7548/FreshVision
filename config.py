@@ -45,6 +45,9 @@ CAMERA_INDEX = 0
 CAMERA_WIDTH = 640
 CAMERA_HEIGHT = 480
 
+# 카메라 색상이 반전되어 보이면(R↔B 뒤바뀜) True로 변경
+SWAP_RB = True
+
 # ===== 타이밍 =====
 SENSOR_CHECK_INTERVAL = 0.1  # 초음파센서 측정 주기 (초)
 LED_DISPLAY_TIME = 3.0       # 판별 결과 LED 표시 시간 (초)
