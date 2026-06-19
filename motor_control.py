@@ -31,10 +31,10 @@ class DCMotor:
         GPIO.output(IN2_PIN, GPIO.LOW)
 
     def stop(self):
-        """모터 정지 (테스트 코드와 동일 방식)"""
+        """모터 정지 (브레이크 모드: IN1=IN2=HIGH로 모터를 꽉 잡아 미세 움직임 방지)"""
+        GPIO.output(IN1_PIN, GPIO.HIGH)
+        GPIO.output(IN2_PIN, GPIO.HIGH)
         self.pwm.ChangeDutyCycle(0)
-        GPIO.output(IN1_PIN, GPIO.LOW)
-        GPIO.output(IN2_PIN, GPIO.LOW)
         self.is_running = False
 
     def forward(self, speed=MOTOR_SPEED):
