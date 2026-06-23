@@ -49,52 +49,32 @@ class FruitClassifier:
         return defaults.get(keyword, -1)
 
     def predict(self, frame):
-        """
-        카메라 프레임(BGR)을 입력받아 판별 결과를 반환.
-
-        Returns:
-            dict: {
-                "label": "정상" 또는 "불량",
-                "is_normal": bool,
-                "normal_prob": float (0~1),
-                "bad_prob": float (0~1)
-            }
-        """
-        # 전처리: 리사이즈, 정규화 (이미 RGB이므로 색상 변환 불필요)
+        # 카메라 이미지를 모델 입력 크기(224x224)로 리사이즈
         img = cv2.resize(frame, MODEL_INPUT_SIZE)
-
-        input_dtype = self.input_details[0]["dtype"]
-
-        if input_dtype == np.float32:
-            img = img.astype(np.float32)
-            img = (img / 127.5) - 1.0  # -1 ~ 1 정규화 (Teachable Machine 기본)
-        else:
-            img = img.astype(np.uint8)
-
+        # 픽셀값을 정수(0~255)에서 실수형으로 변환
+        img = img.astype(np.float32)
+        # 픽셀값을 -1~1 사이로 정규화 (Teachable Machine 기본 전처리 방식)
+        img = (img / 127.5) - 1.0
+        # 모델 입력 형식에 맞게 배치 차원 추가 (224,224,3) → (1,224,224,3)
         img = np.expand_dims(img, axis=0)
 
-        # 추론 실행
+        # 전처리된 이미지를 모델의 입력 텐서에 전달
         self.interpreter.set_tensor(self.input_details[0]["index"], img)
+        # 모델 추론 실행
         self.interpreter.invoke()
+        # 모델 출력 텐서에서 확률값 추출 ex) [0.92, 0.05, 0.03]
         output = self.interpreter.get_tensor(self.output_details[0]["index"])[0]
 
-        # 양자화 모델인 경우 결과값을 0~1로 스케일 변환
-        if input_dtype != np.float32:
-            scale, zero_point = self.output_details[0]["quantization"]
-            if scale > 0:
-                output = (output.astype(np.float32) - zero_point) * scale
+        # 각 클래스별 확률값 추출
+        normal_prob = float(output[self.normal_index])  # 정상 사과 확률
+        bad_prob    = float(output[self.bad_index])     # 썩은 사과 확률
+        none_prob   = float(output[self.none_index]) if self.none_index >= 0 else 0.0  # 감지안됨 확률
 
-        normal_prob = float(output[self.normal_index])
-        bad_prob = float(output[self.bad_index])
-        none_prob = float(output[self.none_index]) if self.none_index >= 0 else 0.0
-
-        # 가장 확률 높은 클래스 결정
+        # 딕셔너리로 묶어서 가장 높은 확률의 클래스 선택
         probs = {"normal": normal_prob, "rotten": bad_prob, "none": none_prob}
-        best = max(probs, key=probs.get)
+        best  = max(probs, key=probs.get)
 
-        is_fruit_detected = (best != "none")
-        is_normal = (best == "normal")
-
+        # 영어 클래스명을 한글 라벨로 변환
         if best == "normal":
             label = "정상"
         elif best == "rotten":
@@ -102,11 +82,12 @@ class FruitClassifier:
         else:
             label = "감지안됨"
 
+        # 판별 결과를 딕셔너리로 반환
         return {
-            "label": label,
-            "is_fruit_detected": is_fruit_detected,
-            "is_normal": is_normal,
-            "normal_prob": normal_prob,
-            "bad_prob": bad_prob,
-            "none_prob": none_prob,
+            "label": label,                      # 최종 판별 결과 (정상/불량/감지안됨)
+            "is_fruit_detected": best != "none", # 과일 감지 여부
+            "is_normal": best == "normal",       # 정상 여부
+            "normal_prob": normal_prob,          # 정상 확률
+            "bad_prob": bad_prob,                # 불량 확률
+            "none_prob": none_prob,              # 감지안됨 확률
         }
